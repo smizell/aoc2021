@@ -1,7 +1,5 @@
 #lang racket
 
-(require threading)
-
 (define example
   `((forward 5)
     (down 5)
@@ -27,6 +25,16 @@
       [`((down ,u) ,rcs ...) (loop rcs hp (+ dp u))]
       [`((up ,u) ,rcs ...) (loop rcs hp (- dp u))]
       ['() (* hp dp)])))
+
+(define (part1a inputs)
+  (for/fold ([hp 0]
+             [dp 0]
+             #:result (* hp dp))
+            ([input (in-list inputs)])
+    (match input
+      [`(forward ,u) (values (+ hp u) dp)]
+      [`(down ,u) (values hp (+ dp u))]
+      [`(up ,u) (values hp (- dp u))])))
 
 (part1 inputs)
 
