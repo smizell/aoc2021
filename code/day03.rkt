@@ -20,7 +20,6 @@
              "01010")
        (map parse-line)))
 
-
 (define inputs
   (call-with-input-file "../inputs/day03.txt"
     (λ (in)
@@ -32,8 +31,8 @@
     [(zero? n) n]
     [else (+ (modulo n 10) (* 2 (binary->decimal (quotient n 10))))]))
 
-(define (num-list->decimal l)
-  (~>> l
+(define (num-list->decimal nl)
+  (~>> nl
        (map number->string)
        (string-join _ "")
        string->number
