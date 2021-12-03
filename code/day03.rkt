@@ -50,7 +50,6 @@
     (if (= 0 n) (values (add1 zs) os) (values zs (add1 os)))))
 
 (define (get-gamma-epsilon nss)
-  (define tnss (transpose nss))
   (~>> nss
        transpose
        (map count-bits)
