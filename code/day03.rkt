@@ -1,7 +1,9 @@
 #lang racket
 
-(require threading
-         math/matrix)
+(require threading)
+
+(define (parse-line l)
+  (~>> l string->list (map string) (map string->number)))
 
 (define example
   (~>> (list "00100"
@@ -16,14 +18,14 @@
              "11001"
              "00010"
              "01010")
-       (map (λ (ns) (~>> ns string->list (map string) (map string->number))))))
+       (map parse-line)))
 
 
 (define inputs
   (call-with-input-file "../inputs/day03.txt"
     (λ (in)
       (for/list ([line (in-lines in)])
-        (~>> line string->list (map string) (map string->number))))))
+        (parse-line line)))))
 
 (define (binary->decimal n)
   (cond
@@ -40,18 +42,20 @@
 (define (transpose nss)
   (apply map list nss))
 
-(define (bits->rates ns)
-  (for/fold ([zs 0]
-             [os 1]
-             ; (list gamma epsilon)
-             #:result (if (> zs os) (list 0 1) (list 1 0)))
-            ([n (in-list ns)])
-    (if (= 0 n) (values (add1 zs) os) (values zs (add1 os)))))
+(define (get-gamma-epsilon nss)
+  (define tnss (transpose nss))
+  (~>> tnss
+       (map (λ (ns)
+              (for/fold ([zs 0]
+                         [os 1]
+                         ; (list gamma epsilon)
+                         #:result (if (> zs os) (list 0 1) (list 1 0)))
+                        ([n (in-list ns)])
+                (if (= 0 n) (values (add1 zs) os) (values zs (add1 os))))))
+       transpose))
 
 (define (part1 inputs)
   (~>> inputs
-       transpose
-       (map bits->rates)
-       transpose
+       get-gamma-epsilon
        (map num-list->decimal)
        (apply *)))
