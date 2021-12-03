@@ -47,7 +47,7 @@
 (define (one-count l)
   (count (λ (n) (= n 1)) l))
 
-(define (order-bits-by-count ns)
+(define (order-bits-by-count ns #:on-equal [on-equal 1])
   (if (> (zero-count ns) (one-count ns))
       (list 0 1)
       (list 1 0)))
@@ -63,3 +63,26 @@
        get-gamma-epsilon
        (map num-list->decimal)
        (apply *)))
+
+(define (get-oxygen-rating inputs [idx 0])
+  (cond
+    [(= (length inputs) 1) (num-list->decimal (first inputs))]
+    [else (define curr (~> inputs transpose (list-ref idx)))
+          (define rs
+            (cond
+              [(>= (one-count curr) (zero-count curr)) (filter (λ (ns) (= (list-ref ns idx) 1)) inputs)]
+              [else (filter (λ (ns) (= (list-ref ns idx) 0)) inputs)]))
+          (get-oxygen-rating rs (add1 idx))]))
+
+(define (get-co2-rating inputs [idx 0])
+  (cond
+    [(= (length inputs) 1) (num-list->decimal (first inputs))]
+    [else (define curr (~> inputs transpose (list-ref idx)))
+          (define rs
+            (cond
+              [(<= (zero-count curr) (one-count curr)) (filter (λ (ns) (= (list-ref ns idx) 0)) inputs)]
+              [else (filter (λ (ns) (= (list-ref ns idx) 1)) inputs)]))
+          (get-co2-rating rs (add1 idx))]))
+
+(define (part2 inputs)
+  (* (get-oxygen-rating inputs) (get-co2-rating inputs)))
