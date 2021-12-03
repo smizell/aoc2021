@@ -41,18 +41,21 @@
 (define (transpose nss)
   (apply map list nss))
 
-(define (count-bits ns)
-  (for/fold ([zs 0]
-             [os 1]
-             ; (list gamma epsilon)
-             #:result (if (> zs os) (list 0 1) (list 1 0)))
-            ([n (in-list ns)])
-    (if (= 0 n) (values (add1 zs) os) (values zs (add1 os)))))
+(define (zero-count l)
+  (count (λ (n) (= n 0)) l))
+
+(define (one-count l)
+  (count (λ (n) (= n 1)) l))
+
+(define (order-bits-by-count ns)
+  (if (> (zero-count ns) (one-count ns))
+      (list 0 1)
+      (list 1 0)))
 
 (define (get-gamma-epsilon nss)
   (~>> nss
        transpose
-       (map count-bits)
+       (map order-bits-by-count)
        transpose))
 
 (define (part1 inputs)
