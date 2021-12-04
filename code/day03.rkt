@@ -67,7 +67,7 @@
 (define (get-oxygen-rating inputs [idx 0])
   (cond
     [(= (length inputs) 1) (num-list->decimal (first inputs))]
-    [else (define curr (~> inputs transpose (list-ref idx)))
+    [else (define curr (map (λ (ns) (list-ref ns idx)) inputs))
           (define rs
             (cond
               [(>= (one-count curr) (zero-count curr)) (filter (λ (ns) (= (list-ref ns idx) 1)) inputs)]
@@ -77,7 +77,7 @@
 (define (get-co2-rating inputs [idx 0])
   (cond
     [(= (length inputs) 1) (num-list->decimal (first inputs))]
-    [else (define curr (~> inputs transpose (list-ref idx)))
+    [else (define curr (map (λ (ns) (list-ref ns idx)) inputs))
           (define rs
             (cond
               [(<= (zero-count curr) (one-count curr)) (filter (λ (ns) (= (list-ref ns idx) 0)) inputs)]
