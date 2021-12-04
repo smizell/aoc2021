@@ -100,7 +100,7 @@
   ; The one with the least left is the last board.
   (~>> game
        $game-boards
-       (map (λ (b) ($game ($game-nums game) (list b))))
+       (map (λ (b) (struct-copy $game game [boards (list b)])))
        (map play-game)
        (filter (λ (r) (second r))) ; remove boards that never win
        (sort _ < #:key (λ (r) (length (first r))))
