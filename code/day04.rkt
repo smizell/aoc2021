@@ -50,8 +50,8 @@
 (define (board-won? rs)
   (or (for/or ([r (in-list rs)])
         (cells-complete? r))
-      (for/or ([c (in-list (transpose rs))])
-        (cells-complete? c))))
+      (for/or ([r (in-list (transpose rs))])
+        (cells-complete? r))))
 
 (module+ test
   (check-false (board-won? (list row-not-complete)))
