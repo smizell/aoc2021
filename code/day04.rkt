@@ -90,21 +90,17 @@
      (first ns)))
 
 (define (part1 filename)
-  (define-values (ns-left winner-board) (play-game-file filename))
-  (calculate ns-left winner-board))
+  (call-with-values (λ () (play-game-file filename)) calculate))
 
 (define (part2 filename)
   (define game (load-game filename))
   ; Play each board separately and see how many nums are left.
   ; The one with the least left is the last board.
-  (match-define (list ns-left board)
-    (~>> game
-         $game-boards
-         (map (λ (b)
-                (define new-game ($game ($game-nums game) (list b)))
-                (define-values (ns-left winner) (play-game new-game))
-                (list ns-left winner)))
-         (filter (λ (r) (second r)))
-         (sort _ < #:key (λ (r) (length (first r))))
-         first))
-  (calculate ns-left board))
+  (~>> game
+       $game-boards
+       (map (λ (b) ($game ($game-nums game) (list b))))
+       (map (λ (g) (call-with-values (λ () (play-game g)) list)))
+       (filter (λ (r) (second r))) ; remove boards that never win
+       (sort _ < #:key (λ (r) (length (first r))))
+       first
+       (apply calculate)))
