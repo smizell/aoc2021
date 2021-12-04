@@ -69,8 +69,8 @@
     (define winner (for/or ([b (in-list marked-bs)])
                      (if (board-won? b) b #f)))
     (cond
-      [winner (values ns winner)]
-      [(empty? rns) (values ns #f)] ; No winners
+      [winner (list ns winner)]
+      [(empty? rns) (list ns #f)] ; No winners
       [else (loop (rest ns) marked-bs)])))
 
 (define (play-game-file filename)
@@ -90,7 +90,9 @@
      (first ns)))
 
 (define (part1 filename)
-  (call-with-values (λ () (play-game-file filename)) calculate))
+  (~>> filename
+       play-game-file
+       (apply calculate)))
 
 (define (part2 filename)
   (define game (load-game filename))
@@ -99,7 +101,7 @@
   (~>> game
        $game-boards
        (map (λ (b) ($game ($game-nums game) (list b))))
-       (map (λ (g) (call-with-values (λ () (play-game g)) list)))
+       (map play-game)
        (filter (λ (r) (second r))) ; remove boards that never win
        (sort _ < #:key (λ (r) (length (first r))))
        first
