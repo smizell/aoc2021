@@ -66,17 +66,15 @@
     (define n (first ns))
     (define rns (rest ns))
     (define marked-bs (map (λ (b) (mark-cells b n)) bs))
-    (define winner
-      (for/or ([b (in-list marked-bs)])
-        (if (board-won? b) b #f)))
+    (define winner (for/or ([b (in-list marked-bs)])
+                     (if (board-won? b) b #f)))
     (cond
       [winner (values ns winner)]
       [(empty? rns) (values ns #f)] ; No winners
       [else (loop (rest ns) marked-bs)])))
 
 (define (play-game-file filename)
-  (define game (load-game filename))
-  (play-game game))
+  (play-game (load-game filename)))
 
 (define (unmarked-cells css)
   (for/fold ([acc '()])
@@ -87,22 +85,26 @@
   (check-equal? (unmarked-cells (list (list ($cell 4 #f) ($cell 10 #t))))
                 (list ($cell 4 #f))))
 
+(define (calculate ns board)
+  (* (apply + (~>> board unmarked-cells (map $cell-num)))
+     (first ns)))
+
 (define (part1 filename)
   (define-values (ns-left winner-board) (play-game-file filename))
-  (* (apply + (~>> winner-board unmarked-cells (map $cell-num)))
-     (first ns-left)))
+  (calculate ns-left winner-board))
 
 (define (part2 filename)
   (define game (load-game filename))
-  (define last-winner-info (~>> game
-                                $game-boards
-                                (map (λ (b)
-                                       (define new-game ($game ($game-nums game) (list b)))
-                                       (define-values (ns-left winner) (play-game new-game))
-                                       (list ns-left winner)))
-                                (filter (λ (r) (second r)))
-                                (sort _ < #:key (λ (r) (length (first r))))
-                                first))
-  (match-define (list ns-left board) last-winner-info)
-  (* (apply + (~>> board unmarked-cells (map $cell-num)))
-     (first ns-left)))
+  ; Play each board separately and see how many nums are left.
+  ; The one with the least left is the last board.
+  (match-define (list ns-left board)
+    (~>> game
+         $game-boards
+         (map (λ (b)
+                (define new-game ($game ($game-nums game) (list b)))
+                (define-values (ns-left winner) (play-game new-game))
+                (list ns-left winner)))
+         (filter (λ (r) (second r)))
+         (sort _ < #:key (λ (r) (length (first r))))
+         first))
+  (calculate ns-left board))
