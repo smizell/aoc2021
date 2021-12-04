@@ -70,8 +70,8 @@
       (for/or ([b (in-list marked-bs)])
         (if (board-won? b) b #f)))
     (cond
-      [winner (values n winner)]
-      [(empty? rns) (values #f #f)] ; No winners
+      [winner (values ns winner)]
+      [(empty? rns) (values ns #f)] ; No winners
       [else (loop (rest ns) marked-bs)])))
 
 (define (play-game-file filename)
@@ -88,6 +88,21 @@
                 (list ($cell 4 #f))))
 
 (define (part1 filename)
-  (define-values (last-num winner-board) (play-game-file filename))
+  (define-values (ns-left winner-board) (play-game-file filename))
   (* (apply + (~>> winner-board unmarked-cells (map $cell-num)))
-     last-num))
+     (first ns-left)))
+
+(define (part2 filename)
+  (define game (load-game filename))
+  (define last-winner-info (~>> game
+                                $game-boards
+                                (map (λ (b)
+                                       (define new-game ($game ($game-nums game) (list b)))
+                                       (define-values (ns-left winner) (play-game new-game))
+                                       (list ns-left winner)))
+                                (filter (λ (r) (second r)))
+                                (sort _ < #:key (λ (r) (length (first r))))
+                                first))
+  (match-define (list ns-left board) last-winner-info)
+  (* (apply + (~>> board unmarked-cells (map $cell-num)))
+     (first ns-left)))
