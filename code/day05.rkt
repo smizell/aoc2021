@@ -32,12 +32,13 @@
   (not (or (= x1 x2) (= y1 y2))))
 
 (define (calculate* lines)
-  (define cs (~>> lines (map line->coors) (apply append)))
-  (define results
-    (for/fold ([acc (hash)])
-              ([c (in-list cs)])
-      (hash-update acc c add1 0)))
-  (~>> results hash-values (filter (λ (v) (> v 1))) length))
+  (~>> lines
+       (map line->coors)
+       (apply append)
+       (foldl (λ (c acc) (hash-update acc c add1 0)) (hash))
+       hash-values
+       (filter (λ (v) (> v 1)))
+       length))
 
 (define (part1* filename)
   (~>> filename load-lines (filter-not diagonal?) calculate*))
