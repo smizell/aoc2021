@@ -36,7 +36,7 @@
   (define results
     (for/fold ([acc (hash)])
               ([c (in-list cs)])
-      (hash-set acc c (add1 (hash-ref acc c 0)))))
+      (hash-update acc c add1 0)))
   (~>> results hash-values (filter (λ (v) (> v 1))) length))
 
 (define (part1* filename)
