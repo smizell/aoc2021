@@ -22,17 +22,17 @@
 (define (line->coors line)
   (match line
     [`((,x ,y1) (,x ,y2))
-     (define y (if (< y1 y2) (range y1 (add1 y2)) (range y2 (add1 y1))))
-     (cartesian-product (list x) y)]
+     (define ys (if (< y1 y2) (range y1 (add1 y2)) (range y2 (add1 y1))))
+     (cartesian-product (list x) ys)]
     [`((,x1 ,y) (,x2 ,y))
-     (define x (if (< x1 x2) (range x1 (add1 x2)) (range x2 (add1 x1))))
-     (cartesian-product x (list y))]
+     (define xs (if (< x1 x2) (range x1 (add1 x2)) (range x2 (add1 x1))))
+     (cartesian-product xs (list y))]
     [`((,x1 ,y1) (,x2 ,y2))
      ; we have to reverse the ranges because range only works with ascending nums
-     (define x-list (if (< x1 x2) (range x1 (add1 x2)) (reverse (range x2 (add1 x1)))))
-     (define y-list (if (< y1 y2) (range y1 (add1 y2)) (reverse (range y2 (add1 y1)))))
-     (for/list ([x (in-list x-list)]
-                [y (in-list y-list)])
+     (define xs (if (< x1 x2) (range x1 (add1 x2)) (reverse (range x2 (add1 x1)))))
+     (define ys (if (< y1 y2) (range y1 (add1 y2)) (reverse (range y2 (add1 y1)))))
+     (for/list ([x (in-list xs)]
+                [y (in-list ys)])
        (list x y))]))
 
 (define (diagonal? line)
@@ -55,8 +55,7 @@
     (values (if (> max-x x) max-x x)
             (if (> max-y y) max-y y))))
 
-(define (part1 filename)
-  (define lines (~>> filename load-lines (filter-not diagonal?)))
+(define (calculate lines)
   (define diagram (for/fold ([d (apply build-diagram (diagram-dimensions lines))])
                             ([l (in-list lines)])
                     (plot-line d l)))
@@ -64,11 +63,8 @@
             ([r (in-list diagram)])
     (+ acc (count (λ (n) (> n 1)) r))))
 
+(define (part1 filename)
+  (~>> filename load-lines (filter-not diagonal?) calculate))
+
 (define (part2 filename)
-  (define lines (~>> filename load-lines))
-  (define diagram (for/fold ([d (apply build-diagram (diagram-dimensions lines))])
-                            ([l (in-list lines)])
-                    (plot-line d l)))
-  (for/fold ([acc 0])
-            ([r (in-list diagram)])
-    (+ acc (count (λ (n) (> n 1)) r))))
+  (~>> filename load-lines calculate))
