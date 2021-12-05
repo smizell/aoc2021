@@ -11,14 +11,6 @@
                  (list (list (string->number x1) (string->number y1))
                        (list (string->number x2) (string->number y2)))])))))
 
-(define (build-diagram x y)
-  (build-list (add1 y) (λ (n) (build-list (add1 x) (λ (n) 0)))))
-
-(define (add-coordinate diagram coor)
-  (match-define (list x y) coor)
-  (define n (~> diagram (list-ref y) (list-ref x) add1))
-  (~> diagram  (list-set y (~> diagram (list-ref y) (list-set x n)))))
-
 (define (line->coors line)
   (match line
     [`((,x ,y1) (,x ,y2))
@@ -38,6 +30,33 @@
 (define (diagonal? line)
   (match-define (list (list x1 y1) (list x2 y2)) line)
   (not (or (= x1 x2) (= y1 y2))))
+
+(define (calculate* lines)
+  (define cs (~>> lines (map line->coors) (apply append)))
+  (define results
+    (for/fold ([acc (hash)])
+              ([c (in-list cs)])
+      (hash-set acc c (add1 (hash-ref acc c 0)))))
+  (~>> results hash-values (filter (λ (v) (> v 1))) length))
+
+(define (part1* filename)
+  (~>> filename load-lines (filter-not diagonal?) calculate*))
+
+(define (part2* filename)
+  (~>> filename load-lines calculate*))
+
+
+; -------
+; This code below works, but I should have thought about the problem more
+; before jumping into the solution. The one above is much simpler and faster.
+
+(define (build-diagram x y)
+  (build-list (add1 y) (λ (n) (build-list (add1 x) (λ (n) 0)))))
+
+(define (add-coordinate diagram coor)
+  (match-define (list x y) coor)
+  (define n (~> diagram (list-ref y) (list-ref x) add1))
+  (~> diagram  (list-set y (~> diagram (list-ref y) (list-set x n)))))
 
 (define (plot-line diagram line)
   (define coors (line->coors line))
