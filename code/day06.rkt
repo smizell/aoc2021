@@ -16,23 +16,24 @@
       [_ (cons (sub1 f) acc)])))
 
 (define (simulate fish days)
-  (cond
-    [(zero? days) fish]
-    [else (simulate (tick-fish fish) (sub1 days))]))
+  (match days
+    [0 fish]
+    [_ (simulate (tick-fish fish) (sub1 days))]))
+
+(define (increase-hash-value h k v [default 0])
+  (hash-update h k (curry + v) default))
 
 (define (tick-fish* fish)
   (for/fold ([acc (hash)])
             ([(d c) (in-hash fish)])
     (match d
-      [0 (~> acc
-             (hash-update 6 (curry + c) 0)
-             (hash-update 8 (curry + c) 0))]
-      [_ (hash-update acc (sub1 d) (curry + c) 0)])))
+      [0 (~> acc (increase-hash-value 6 c) (increase-hash-value 8 c))]
+      [_ (increase-hash-value acc (sub1 d) c)])))
 
 (define (simulate* fish days)
-  (cond
-    [(zero? days) (apply + (hash-values fish))]
-    [else (simulate* (tick-fish* fish) (sub1 days))]))
+  (match days
+    [0 (apply + (hash-values fish))]
+    [_ (simulate* (tick-fish* fish) (sub1 days))]))
 
 (define (fish->hash fish)
   (for/fold ([acc (hash)])
