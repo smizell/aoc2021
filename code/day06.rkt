@@ -25,9 +25,9 @@
             ([(d c) (in-hash fish)])
     (match d
       [0 (~> acc
-             (hash-update 6 (λ (v) (+ v c)) 0)
-             (hash-update 8 (λ (v) (+ v c)) 0))]
-      [_ (hash-update acc (sub1 d) (λ (v) (+ v c)) 0)])))
+             (hash-update 6 (curry + c) 0)
+             (hash-update 8 (curry + c) 0))]
+      [_ (hash-update acc (sub1 d) (curry + c) 0)])))
 
 (define (simulate* fish days)
   (cond
