@@ -7,8 +7,7 @@
 
 (define (calculate ps [modifier identity])
   (for/lists (cs #:result (apply min cs))
-             ([n (in-range (apply min ps)
-                           (add1 (apply max ps)))])
+             ([n (in-inclusive-range (apply min ps) (apply max ps))])
     (for/lists (ds #:result (apply + ds))
                ([p (in-list ps)])
       (modifier (abs (- n p))))))
