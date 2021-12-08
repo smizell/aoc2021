@@ -47,12 +47,11 @@
              ; 2 is 5 long and doesn't match the above
              [else (hash-set acc rl 2)])]
         [6 (cond
-             ; 9 is 6 long and includes 1 and 4
-             [(and (subset? (hash-ref unique 1) r)
-                   (subset? (hash-ref unique 4) r)) (hash-set acc rl 9)]
+             ; 9 is 6 long and 4
+             [(subset? (hash-ref unique 4) r) (hash-set acc rl 9)]
              ; 0 is 6 long, doesn't include 4, and includes 7
              [(subset? (hash-ref unique 7) r) (hash-set acc rl 0)]
-             ; 6 is 6 long and doesn't include 1
+             ; 6 is 6 long and doesn't match the above
              [else (hash-set acc rl 6)])])))
   (for/fold ([acc found])
             ([(n s) (in-hash unique)])
