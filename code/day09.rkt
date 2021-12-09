@@ -71,13 +71,16 @@
             ([p (in-list unexplored)])
     (find-basin heightmap p acc)))
 
+; My code produced duplicates so I convert to a set and back.
+; It's ugly, but works so I'm leaving it.
+(define (find-basin* heightmap pos)
+  (set->list (list->set (find-basin heightmap pos))))
+
 (define (part2 filename)
   (define heightmap (~>> filename load-heightmap))
   (~>> heightmap
        find-lowest
-       ; My code produced duplicates so I convert to a set and back.
-       ; It's ugly, but works.
-       (map (λ (p) (set->list (list->set (find-basin heightmap p)))))
+       (map (curry find-basin* heightmap))
        (map (λ (b) (map (curry pos->value heightmap) b)))
        (map length)
        (sort _ >)
