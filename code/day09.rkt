@@ -33,7 +33,7 @@
 (define (pos->value heightmap pos)
   (~> heightmap (list-ref ($pos-y pos)) (list-ref ($pos-x pos))))
 
-(define (find-lowest heightmap)
+(define (find-lowest-poss heightmap)
   (for*/fold ([acc '()])
              ([(vs y) (in-indexed heightmap)]
               [(v x) (in-indexed vs)])
@@ -48,7 +48,7 @@
 (define (part1 filename)
   (define heightmap (~>> filename load-heightmap))
   (~>> heightmap
-       find-lowest
+       find-lowest-poss
        (map (curry pos->value heightmap))
        (map add1)
        (apply +)))
@@ -72,7 +72,7 @@
 (define (part2 filename)
   (define heightmap (~>> filename load-heightmap))
   (~>> heightmap
-       find-lowest
+       find-lowest-poss
        (map (curry find-basin-poss heightmap))
        (map (λ (ps) (map (curry pos->value heightmap) ps)))
        (map length)
