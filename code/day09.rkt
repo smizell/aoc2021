@@ -20,11 +20,10 @@
 
 (define (on-map? heightmap pos)
   (match-define ($pos x y) pos)
-  (cond
-    [(or (negative? x) (negative? y)) #f]
-    [(or (> x (sub1 (length (first heightmap))))
-         (> y (sub1 (length heightmap)))) #f]
-    [else #t]))
+  (not (or (negative? x)
+           (negative? y)
+           (> x (sub1 (length (first heightmap))))
+           (> y (sub1 (length heightmap))))))
 
 (define (adjacent-poss-on-map heightmap pos)
   (~>> (adjacent-poss pos)
