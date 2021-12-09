@@ -73,18 +73,15 @@
 
 (define (part2 filename)
   (define heightmap (~>> filename load-heightmap))
-  (apply * (~> heightmap
-               find-lowest
-               (map (λ (p)
-                      ; This sucks but works
-                      (set->list (list->set (find-basin heightmap p))))
-                    _)
-               (map (λ (b)
-                      (map (curry pos->value heightmap) b))
-                    _)
-               (map length _)
-               (sort >)
-               (take 3))))
+  (apply * (~>> heightmap
+                find-lowest
+                ; My code produced duplicates so I convert to a set and back
+                ; It's ugly, but works.
+                (map (λ (p) (set->list (list->set (find-basin heightmap p)))))
+                (map (λ (b) (map (curry pos->value heightmap) b)))
+                (map length)
+                (sort _ >)
+                (take _ 3))))
 
 (module+ test
   (check-eq? (part2 "../inputs/day09.txt") 1391940))
