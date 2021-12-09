@@ -65,22 +65,17 @@
   (define unexplored (set->list (set-subtract (list->set bps) (list->set basin))))
   (define new-basin
     (cond
-      [(in-basin? heightmap pos) (cons pos (append unexplored basin))]
+      [(and (in-basin? heightmap pos) (empty? basin)) (cons pos (append unexplored basin))]
       [else (append unexplored basin)]))
   (for/fold ([acc new-basin])
             ([p (in-list unexplored)])
     (find-basin-poss heightmap p acc)))
 
-; My code produced duplicates so I convert to a set and back.
-; It's ugly, but works so I'm leaving it.
-(define (find-basin-poss* heightmap pos)
-  (set->list (list->set (find-basin-poss heightmap pos))))
-
 (define (part2 filename)
   (define heightmap (~>> filename load-heightmap))
   (~>> heightmap
        find-lowest
-       (map (curry find-basin-poss* heightmap))
+       (map (curry find-basin-poss heightmap))
        (map (λ (ps) (map (curry pos->value heightmap) ps)))
        (map length)
        (sort _ >)
