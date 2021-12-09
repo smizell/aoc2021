@@ -1,6 +1,7 @@
 #lang racket
 
-(require threading)
+(require rackunit
+         threading)
 
 (define (load-map filename)
   (~>> filename
@@ -8,15 +9,22 @@
        (string-split _ "\n")
        (map (λ (l) (~>> l string->list (map string) (map string->number))))))
 
-(define (adjacent-pos* x y)
-  (cartesian-product (list (sub1 x) x (add1 x))
-                     (list (sub1 y) y (add1 y))))
+(struct $pos (x y))
 
 (define (adjacent-pos x y)
   (list (list (sub1 x) y)
         (list (add1 x) y)
         (list x (sub1 y))
         (list x (add1 y))))
+
+(define (on-map? heightmap x y)
+  (cond
+    [(or (negative? x) (negative? y)) #f]
+    [(or (> x (sub1 (length (first heightmap)))) (> y (sub1 (length heightmap)))) #f]
+    [else #t]))
+
+(define (pos->value heightmap x y)
+  (~> heightmap (list-ref y) (list-ref x)))
 
 (define (find-lowest heightmap)
   (for/fold ([acc '()])
@@ -25,14 +33,8 @@
               ([(v x) (in-indexed vs)])
       (define is-smallest
         (~>> (adjacent-pos x y)
-             (filter (match-lambda
-                       [(list ax ay)
-                        (cond
-                          [(or (negative? ax) (negative? ay)) #f]
-                          [(or (> ax (sub1 (length vs))) (> ay (sub1 (length heightmap)))) #f]
-                          [else #t])]))
-             (map (match-lambda
-                    [(list ax ay) (~> heightmap (list-ref ay) (list-ref ax))]))
+             (filter (match-lambda [(list ax ay) (on-map? heightmap ax ay)]))
+             (map (match-lambda [(list ax ay) (pos->value heightmap ax ay)]))
              (andmap (curry < v))))
       (if is-smallest (cons v acc) acc))))
 
@@ -42,3 +44,6 @@
        find-lowest
        (map add1)
        (apply +)))
+
+(module+ test
+  (check-eq? (part1 "../inputs/day09.txt") 458))
