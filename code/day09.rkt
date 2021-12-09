@@ -11,20 +11,27 @@
 
 (struct $pos (x y))
 
-(define (adjacent-pos x y)
-  (list (list (sub1 x) y)
-        (list (add1 x) y)
-        (list x (sub1 y))
-        (list x (add1 y))))
+(define (adjacent-poss pos)
+  (match-define ($pos x y) pos)
+  (list ($pos (sub1 x) y)
+        ($pos (add1 x) y)
+        ($pos x (sub1 y))
+        ($pos x (add1 y))))
 
-(define (on-map? heightmap x y)
+(define (on-map? heightmap pos)
+  (match-define ($pos x y) pos)
   (cond
     [(or (negative? x) (negative? y)) #f]
-    [(or (> x (sub1 (length (first heightmap)))) (> y (sub1 (length heightmap)))) #f]
+    [(or (> x (sub1 (length (first heightmap))))
+         (> y (sub1 (length heightmap)))) #f]
     [else #t]))
 
-(define (pos->value heightmap x y)
-  (~> heightmap (list-ref y) (list-ref x)))
+(define (adjacent-poss-on-map heightmap pos)
+  (~>> (adjacent-poss pos)
+       (filter (curry on-map? heightmap))))
+
+(define (pos->value heightmap pos)
+  (~> heightmap (list-ref ($pos-y pos)) (list-ref ($pos-x pos))))
 
 (define (find-lowest heightmap)
   (for/fold ([acc '()])
@@ -32,9 +39,9 @@
     (for/fold ([acc acc])
               ([(v x) (in-indexed vs)])
       (define is-smallest
-        (~>> (adjacent-pos x y)
-             (filter (match-lambda [(list ax ay) (on-map? heightmap ax ay)]))
-             (map (match-lambda [(list ax ay) (pos->value heightmap ax ay)]))
+        (~>> ($pos x y)
+             (adjacent-poss-on-map heightmap)
+             (map (curry pos->value heightmap))
              (andmap (curry < v))))
       (if is-smallest (cons v acc) acc))))
 
