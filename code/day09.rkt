@@ -74,7 +74,6 @@
   (~>> heightmap
        find-lowest-poss
        (map (curry find-basin-poss heightmap))
-       (map (λ (ps) (map (curry pos->value heightmap) ps)))
        (map length)
        (sort _ >)
        (take _ 3)
