@@ -85,7 +85,7 @@
        (map length)
        (sort _ >)
        (take _ 3)
-       (apply * )))
+       (apply *)))
 
 (module+ test
   (check-eq? (part2 "../inputs/day09.txt") 1391940))
