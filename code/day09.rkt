@@ -60,14 +60,12 @@
   (< (pos->value heightmap pos) 9))
 
 (define (find-basin-poss heightmap pos [basin '()])
-  (define ps (adjacent-poss-on-map heightmap pos))
-  (define bps (filter (curry in-basin? heightmap) ps))
+  (define bps (~>> pos
+                   (adjacent-poss-on-map heightmap)
+                   (filter (curry in-basin? heightmap))
+                   (cons pos)))
   (define unexplored (set->list (set-subtract (list->set bps) (list->set basin))))
-  (define new-basin
-    (cond
-      [(and (in-basin? heightmap pos) (empty? basin)) (cons pos (append unexplored basin))]
-      [else (append unexplored basin)]))
-  (for/fold ([acc new-basin])
+  (for/fold ([acc (append unexplored basin)])
             ([p (in-list unexplored)])
     (find-basin-poss heightmap p acc)))
 
