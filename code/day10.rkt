@@ -3,6 +3,9 @@
 (require threading
          rackunit)
 
+(struct $incomplete (chars))
+(struct $error (char))
+
 (define (load-code filename)
   (~>> filename
        file->string
@@ -25,12 +28,12 @@
 
 (define (parse-line line [current '()])
   (cond
-    [(and (not (empty? current)) (empty? line)) (list 'incomplete current line)]
-    [(empty? line) (list 'done)]
+    [(and (not (empty? current)) (empty? line)) ($incomplete current)]
+    [(empty? line) 'done]
     [(empty? current) (parse-line (rest line) (cons (first line) current))]
     [(closing-for? (first current) (first line)) (parse-line (rest line) (rest current))]
     [(opening? (first line)) (parse-line (rest line) (cons (first line) current))]
-    [else (list 'error (first line) current line)]))
+    [else ($error (first line))]))
 
 (define (part1-score c)
   (match c
@@ -43,8 +46,8 @@
   (~>> filename
        load-code
        (map parse-line)
-       (filter (λ (l) (equal? 'error (first l))))
-       (map second)
+       (filter $error?)
+       (map $error-char)
        (map part1-score)
        (apply +)))
 
@@ -65,8 +68,8 @@
     (~>> filename
          load-code
          (map parse-line)
-         (filter (λ (l) (equal? 'incomplete (first l))))
-         (map second)
+         (filter $incomplete?)
+         (map $incomplete-chars)
          (map complete-line)
          (map part2-score)
          (sort _ >)))
