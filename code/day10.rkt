@@ -30,43 +30,45 @@
     [(empty? current) (parse-line (rest line) (cons (first line) current))]
     [(closing-for? (first current) (first line)) (parse-line (rest line) (rest current))]
     [(opening? (first line)) (parse-line (rest line) (cons (first line) current))]
-    [else (list 'error (first line) line)]))
+    [else (list 'error (first line) current line)]))
+
+(define (part1-score c)
+  (match c
+    [")" 3]
+    ["]" 57]
+    ["}" 1197]
+    [">" 25137]))
 
 (define (part1 filename)
   (~>> filename
        load-code
        (map parse-line)
-       (filter (λ (l) (match l
-                        [(cons 'error _) #t]
-                        [_ #f])))
-       (map (λ (e) (match (second e)
-                     [")" 3]
-                     ["]" 57]
-                     ["}" 1197]
-                     [">" 25137])))
+       (filter (λ (l) (equal? 'error (first l))))
+       (map second)
+       (map part1-score)
        (apply +)))
 
 (define (complete-line incomplete)
   (map (λ (c) (hash-ref chars c)) incomplete))
+
+(define (part2-score cs)
+  (for/fold ([acc 0])
+            ([c (in-list cs)])
+    (+ (* acc 5) (match c
+                   [")" 1]
+                   ["]" 2]
+                   ["}" 3]
+                   [">" 4]))))
 
 (define (part2 filename)
   (define results
     (~>> filename
          load-code
          (map parse-line)
-         (filter (λ (l) (match l
-                          [(cons 'incomplete _) #t]
-                          [_ #f])))
-         (map (λ (l) (complete-line (second l))))
-         (map (λ (cs)
-                (for/fold ([acc 0])
-                          ([c (in-list cs)])
-                  (+ (* acc 5)
-                     (match c
-                       [")" 1]
-                       ["]" 2]
-                       ["}" 3]
-                       [">" 4])))))
+         (filter (λ (l) (equal? 'incomplete (first l))))
+         (map second)
+         (map complete-line)
+         (map part2-score)
          (sort _ >)))
   (list-ref results (floor (/ (length results) 2))))
 
