@@ -43,14 +43,12 @@
 
 (define (plot dots dimensions)
   (match-define (list max-x max-y) dimensions)
-  (for/list ([x (in-inclusive-range 0 max-x)])
-    (for/list ([y (in-inclusive-range 0 max-y)])
+  (for/list ([y (in-inclusive-range 0 max-y)])
+    (for/list ([x (in-inclusive-range 0 max-x)])
       (cond
         [(set-member? dots ($dot x y)) "#"]
         [else "."]))))
 
-; Prints it sideways and backwards
-; Just leaving for now
 (define (part2 filename)
   (match-define ($paper ds fs) (load-paper filename))
   (define ds*
