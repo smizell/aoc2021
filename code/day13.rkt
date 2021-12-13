@@ -11,16 +11,17 @@
   ($paper (~>> dots
                (string-split _ "\n")
                (map (λ (ns) (~>> ns (string-split _ ",") (map string->number))))
-               (map (curry apply $dot)))
+               (map (curry apply $dot))
+               list->set)
           (~>> folds
                (string-split _ "\n")
                (map (λ (i)
                       (match-define (list _ axis num) (regexp-match #px"fold along (\\w)=(\\d+)" i))
                       ($fold (string->symbol axis) (string->number num)))))))
 
-(define (fold-dots dots fold)
+(define (fold-dots fold dots)
   (match-define ($fold axis num) fold)
-  (for/set ([d (in-list dots)])
+  (for/set ([d (in-set dots)])
     (match axis
       ['y (cond
            [(< ($dot-y d) num) d]
@@ -31,13 +32,13 @@
 
 (define (part1 filename)
   (define paper (load-paper filename))
-  (~> paper $paper-dots (fold-dots (first ($paper-folds paper))) set-count))
+  (~>> paper $paper-dots (fold-dots (first ($paper-folds paper))) set-count))
 
 (define (get-dimensions dots)
   (for/fold ([max-x 0]
              [max-y 0]
              #:result (list max-x max-y))
-            ([d (in-list dots)])
+            ([d (in-set dots)])
     (values (if (> ($dot-x d) max-x) ($dot-x d) max-x)
             (if (> ($dot-y d) max-y) ($dot-y d) max-y))))
 
@@ -51,11 +52,8 @@
 
 (define (part2 filename)
   (match-define ($paper ds fs) (load-paper filename))
-  (define ds*
-    (for/fold ([ds ds] #:result (list->set ds))
-              ([f (in-list fs)])
-      (set->list (fold-dots ds f))))
-  (define dimensions (get-dimensions (set->list ds*)))
-  (define p (plot ds* dimensions))
-  (for ([l (in-list (map (λ (l) (~> l (string-join ""))) p))])
+  (define ds* (foldl fold-dots ds fs))
+  (define p (~>> ds* get-dimensions (plot ds*)))
+  (define p* (map (λ (l) (~> l (string-join ""))) p))
+  (for ([l (in-list p*)])
     (println l)))
