@@ -1,6 +1,22 @@
 #lang racket
 
-(require threading)
+(require rackunit
+         threading)
+
+(define (part1 filename)
+  (define paper (load-paper filename))
+  (~>> paper $paper-dots (fold-dots (first ($paper-folds paper))) set-count))
+
+(module+ test
+  (check-eq? (part1 "../inputs/day13-example.txt") 17))
+
+(define (part2 filename)
+  (match-define ($paper ds fs) (load-paper filename))
+  (define ds* (foldl fold-dots ds fs))
+  (define pl (~>> ds* get-dimensions (plot ds*)))
+  (define pl* (map (λ~> (string-join "")) pl))
+  (for ([l (in-list pl*)])
+    (println l)))
 
 (struct $paper (dots folds) #:transparent)
 (struct $dot (x y) #:transparent)
@@ -10,8 +26,9 @@
   (match-define (list dots folds) (~> filename file->string (string-split "\n\n")))
   ($paper (~>> dots
                (string-split _ "\n")
-               (map (λ (ns) (~>> ns (string-split _ ",") (map string->number))))
-               (map (curry apply $dot))
+               (map (λ~>> (string-split _ ",")
+                          (map string->number)
+                          (apply $dot)))
                list->set)
           (~>> folds
                (string-split _ "\n")
@@ -22,17 +39,14 @@
 (define (fold-dots fold dots)
   (match-define ($fold axis num) fold)
   (for/set ([d (in-set dots)])
+    (match-define ($dot x y) d)
     (match axis
       ['y (cond
-           [(< ($dot-y d) num) d]
-           [else (struct-copy $dot d [y (- num (- ($dot-y d) num))])])]
+           [(< y num) d]
+           [else (struct-copy $dot d [y (- num (- y num))])])]
       ['x (cond
-           [(< ($dot-x d) num) d]
-           [else (struct-copy $dot d [x (- num (- ($dot-x d) num))])])])))
-
-(define (part1 filename)
-  (define paper (load-paper filename))
-  (~>> paper $paper-dots (fold-dots (first ($paper-folds paper))) set-count))
+           [(< x num) d]
+           [else (struct-copy $dot d [x (- num (- x num))])])])))
 
 (define (get-dimensions dots)
   (for/fold ([max-x 0]
@@ -49,11 +63,3 @@
       (cond
         [(set-member? dots ($dot x y)) "#"]
         [else "."]))))
-
-(define (part2 filename)
-  (match-define ($paper ds fs) (load-paper filename))
-  (define ds* (foldl fold-dots ds fs))
-  (define p (~>> ds* get-dimensions (plot ds*)))
-  (define p* (map (λ (l) (~> l (string-join ""))) p))
-  (for ([l (in-list p*)])
-    (println l)))
