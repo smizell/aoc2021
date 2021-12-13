@@ -7,9 +7,6 @@
   (define paper (load-paper filename))
   (~>> paper $paper-dots (fold-dots (first ($paper-folds paper))) set-count))
 
-(module+ test
-  (check-eq? (part1 "../inputs/day13-example.txt") 17))
-
 (define (part2 filename)
   (match-define ($paper ds fs) (load-paper filename))
   (define ds* (foldl fold-dots ds fs))
@@ -18,23 +15,28 @@
   (for ([l (in-list pl*)])
     (println l)))
 
+(module+ test
+  (check-eq? (part1 "../inputs/day13-example.txt") 17))
+
 (struct $paper (dots folds) #:transparent)
 (struct $dot (x y) #:transparent)
 (struct $fold (axis num) #:transparent)
 
 (define (load-paper filename)
-  (match-define (list dots folds) (~> filename file->string (string-split "\n\n")))
-  ($paper (~>> dots
-               (string-split _ "\n")
-               (map (λ~>> (string-split _ ",")
-                          (map string->number)
-                          (apply $dot)))
-               list->set)
-          (~>> folds
-               (string-split _ "\n")
-               (map (λ (i)
-                      (match-define (list _ axis num) (regexp-match #px"fold along (\\w)=(\\d+)" i))
-                      ($fold (string->symbol axis) (string->number num)))))))
+  (match-define (list ds fs) (~> filename file->string (string-split "\n\n")))
+  (define ds* (~>> ds
+                   (string-split _ "\n")
+                   (map (λ~>> (string-split _ ",")
+                              (map string->number)
+                              (apply $dot)))
+                   list->set))
+  (define fs* (~>> fs
+                   (string-split _ "\n")
+                   (map (match-lambda
+                          [(pregexp #px"fold along (\\w)=(\\d+)"
+                                    (list _ axis num))
+                           ($fold (string->symbol axis) (string->number num))]))))
+  ($paper ds* fs*))
 
 (define (fold-dots fold dots)
   (match-define ($fold axis num) fold)
