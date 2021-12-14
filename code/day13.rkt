@@ -10,9 +10,8 @@
 (define (part2 filename)
   (match-define ($paper ds fs) (load-paper filename))
   (define ds* (foldl fold-dots ds fs))
-  (define pl (~>> ds* get-dimensions (plot ds*)))
-  (define pl* (map (λ~> (string-join "")) pl))
-  (for ([l (in-list pl*)])
+  (define pl (~>> ds* plot (map (λ~> (string-join "")))))
+  (for ([l (in-list pl)])
     (println l)))
 
 (module+ test
@@ -58,8 +57,8 @@
     (values (if (> ($dot-x d) max-x) ($dot-x d) max-x)
             (if (> ($dot-y d) max-y) ($dot-y d) max-y))))
 
-(define (plot dots dimensions)
-  (match-define (list max-x max-y) dimensions)
+(define (plot dots)
+  (match-define (list max-x max-y) (get-dimensions dots))
   (for/list ([y (in-inclusive-range 0 max-y)])
     (for/list ([x (in-inclusive-range 0 max-x)])
       (cond
