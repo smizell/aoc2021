@@ -9,10 +9,7 @@
 
 (define (part2 filename)
   (match-define ($paper ds fs) (load-paper filename))
-  (define ds* (foldl fold-dots ds fs))
-  (define pl (~>> ds* plot (map (λ~> (string-join "")))))
-  (for ([l (in-list pl)])
-    (println l)))
+  (~> (foldl fold-dots ds fs) plot-and-display))
 
 (module+ test
   (check-eq? (part1 "../inputs/day13-example.txt") 17))
@@ -64,3 +61,10 @@
       (cond
         [(set-member? dots ($dot x y)) "#"]
         [else "."]))))
+
+(define (plot-and-display dots)
+  (~>> dots
+       plot
+       (map (λ~> (string-join "")))
+       (string-join _ "\n")
+       displayln))
